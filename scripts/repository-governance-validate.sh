@@ -2,6 +2,10 @@
 set -Eeuo pipefail
 root="$(git rev-parse --show-toplevel)"
 cd "$root"
+
+# Human can view PRs; only actual security grants require formal approval.
+python3 scripts/check_pr_review_routing.py
+python3 -m unittest tests/test_pr_review_routing.py -v
 bash scripts/absolute-audit-governance-validate.sh "${1:-manual}"
 
 resolve_python() {
