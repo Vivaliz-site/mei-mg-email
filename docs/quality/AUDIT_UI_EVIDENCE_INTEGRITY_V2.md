@@ -34,6 +34,10 @@ The manifest links browser.ui_inventory_ref, each UI journey's execution_ref and
 
 The manifest also includes findings.discovered_total and remediation.fixed_findings. Each discovered finding requires root_cause, fix_sha, and four distinct verified files red_ref, green_ref, regression_ref and reaudit_ref.
 
+## Anti-replay e comprovacao de passos reais
+
+Traces, capturas e videos de auditor primario, revisor independente e rodada pos-deploy devem ser **arquivos distintos**, vinculados por `session_id` e `capture_auditor` identicos aos da execucao correspondente. Reutilizar o mesmo arquivo entre papeis ou jornadas bloqueia APTO. A captura Playwright deve incluir eventos before/after pareados, navegacao real, interacao e reload/revisita, alem dos recursos e requests de rede do trace. Uma unica chamada de click, um ZIP artificial de uma linha, artefato vazio ou origem sem sessao nao satisfaz E2E integral. Para UI desktop, use video original por sessao com evidencia das transicoes e verifique a sequencia registrada. A identidade do gravador ainda exige corroboracao independente no runtime; nunca declarar prova criptografica so por metadados declarados.
+
 Hash and file structure alone do NOT prove the identity of the operator: never overclaim cryptographic attestation. Preserve source browser-bridge and Playwright audit IDs, and independently corroborate high-risk actions. A protected, independently attested recorder is the next enforcement layer; never accept agent-authored imitation artifacts.
 
 ## Controller: no abandonment of incomplete audits
