@@ -108,13 +108,18 @@ def _check_playwright_trace(path):
         return False
     try:
         with zipfile.ZipFile(path) as archive:
-            entries = [entry for entry in archive.infolist() if entry.filename.endswith(".trace")]
-            if not entries:
+            members = archive.infolist()
+            entries = [entry for entry in members if entry.filename.endswith(".trace")]
+            networks = [e for e in members if e.filename.endswith(".network") and 0 < e.file_size <= 40*1024*1024]
+            resources = [e for e in members if (e.filename.startswith("resources/") or "/resources/" in e.filename)
+                         and not e.is_dir() and 0 < e.file_size <= 40*1024*1024]
+            if not entries or not networks or not resources:
                 return False
             for entry in entries:
                 if entry.file_size > 40 * 1024 * 1024 or entry.compress_size == 0:
                     continue
-                before, navigation, interaction, context = {}, False, False, False
+                before, navigation, interaction, revisit, context = {}, False, False, False, False
+                completed_navigations = 0
                 with archive.open(entry) as handle:
                     for line in handle:
                         try:
@@ -139,12 +144,15 @@ def _check_playwright_trace(path):
                             ).lower()
                         elif kind == "after" and call_id in before and not event.get("error"):
                             api = before[call_id]
-                            navigation |= ".goto" in api or api == "goto"
+                            is_navigation = ".goto" in api or api == "goto" or ".navigate" in api
+                            completed_navigations += int(is_navigation)
+                            navigation |= is_navigation
+                            revisit |= ".reload" in api or api == "reload"
                             interaction |= any(
                                 ("." + action in api) or api == action
                                 for action in ("click", "fill", "press", "check", "select")
                             )
-                if context and navigation and interaction:
+                if context and navigation and interaction and (revisit or completed_navigations >= 2):
                     return True
     except (OSError, ValueError, zipfile.BadZipFile, RuntimeError):
         return False

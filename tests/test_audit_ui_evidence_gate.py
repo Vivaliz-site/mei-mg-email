@@ -59,11 +59,15 @@ def playwright_trace_bytes(run_id):
         {"type": "after", "callId": f"{run_id}-goto"},
         {"type": "before", "callId": f"{run_id}-click", "apiName": "Locator.click"},
         {"type": "after", "callId": f"{run_id}-click"},
+        {"type": "before", "callId": f"{run_id}-reload", "apiName": "Page.reload"},
+        {"type": "after", "callId": f"{run_id}-reload"},
     ]
     content = "\n".join(json.dumps(event) for event in events).encode()
     with io.BytesIO() as output:
         with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
             archive.writestr("trace.trace", content)
+            archive.writestr("trace.network", '{"url":"https://example.test"}')
+            archive.writestr("resources/snapshot", "recorded snapshot")
         return output.getvalue()
 
 
@@ -265,16 +269,53 @@ class RealEvidenceTests(unittest.TestCase):
             {"type": "after", "callId": "goto"},
             {"type": "before", "callId": "fill", "method": "fill"},
             {"type": "after", "callId": "fill"},
+            {"type": "before", "callId": "reload", "method": "reload"},
+            {"type": "after", "callId": "reload"},
         ]
         output = io.BytesIO()
         with zipfile.ZipFile(output, "w") as archive:
             archive.writestr("trace.trace", "\n".join(json.dumps(r) for r in records))
+            archive.writestr("trace.network", '{"url":"https://example.test"}')
+            archive.writestr("resources/snapshot", "recorded snapshot")
         raw = output.getvalue()
         (self.root / "trace-primary.zip").write_bytes(raw)
         for artifact in self.data["evidence"]["artifacts"]:
             if artifact["id"] == "trace-primary":
                 artifact["sha256"] = hashlib.sha256(raw).hexdigest()
         self.assertFalse(any("lacks real Playwright" in x for x in self.verdict()))
+
+    def build_trace(self, network=True, resources=True, revisit=True, empty_network=False):
+        events = [{"type": "context-options", "browserName": "chromium"},
+                  {"type": "before", "callId": "goto", "method": "goto"},
+                  {"type": "after", "callId": "goto"},
+                  {"type": "before", "callId": "click", "method": "click"},
+                  {"type": "after", "callId": "click"}]
+        if revisit:
+            events += [{"type": "before", "callId": "reload", "method": "reload"},
+                       {"type": "after", "callId": "reload"}]
+        path = self.root / "trace-adversarial.zip"
+        with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr("trace.trace", "\n".join(json.dumps(e) for e in events))
+            if network:
+                archive.writestr("trace.network", "" if empty_network else '{"url":"https://example.test"}')
+            if resources:
+                archive.writestr("resources/recording", "captured snapshot")
+        return path
+
+    def test_trace_missing_network_blocks(self):
+        self.assertFalse(gate._check_playwright_trace(self.build_trace(network=False)))
+
+    def test_trace_empty_network_blocks(self):
+        self.assertFalse(gate._check_playwright_trace(self.build_trace(empty_network=True)))
+
+    def test_trace_missing_resources_blocks(self):
+        self.assertFalse(gate._check_playwright_trace(self.build_trace(resources=False)))
+
+    def test_trace_missing_revisit_blocks(self):
+        self.assertFalse(gate._check_playwright_trace(self.build_trace(revisit=False)))
+
+    def test_trace_realistic_structure_accepts(self):
+        self.assertTrue(gate._check_playwright_trace(self.build_trace()))
 
     def test_review_must_not_reuse_primary_capture(self):
         review = capture("auditor-b", "session-2")
