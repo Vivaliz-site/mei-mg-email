@@ -1,0 +1,3 @@
+# Human visibility into all PRs is through repository permissions.
+# Human review only for formal security authorization grants.
+/security/owner-approvals/ @shopvivaliz-human
