@@ -1,0 +1,4 @@
+# Default human code owner for every pull request in this repository.
+# Agents may prepare changes; only the authenticated owner may approve protected changes.
+# This is a notification/ownership rule, not a grant or an auto-merge permission.
+* @shopvivaliz-human
