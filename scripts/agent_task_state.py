@@ -4,7 +4,7 @@ from __future__ import annotations
 import json, os, subprocess, sys
 from pathlib import Path
 
-REPOSITORY = "fredmourao-ai/mei-mg-email"
+REPOSITORY = "Vivaliz-site/mei-mg-email"
 CONTROLLER_ENV = "SHOPVIVALIZ_CONTINUITY_STATE_CLI"
 RUNTIME_ENV = "SHOPVIVALIZ_AGENT_TASK_STATE_DIR"
 
