@@ -43,7 +43,7 @@ class AgentChecklistContractTests(unittest.TestCase):
             completed = subprocess.run(args, env=env, text=True, capture_output=True, timeout=20)
             self.assertEqual(completed.returncode, 0, completed.stderr)
             data = json.loads(completed.stdout)
-            self.assertEqual(data["repository"], "fredmourao-ai/mei-mg-email")
+            self.assertEqual(data["repository"], "Vivaliz-site/mei-mg-email")
             self.assertEqual(data["argv"], args[2:])
 
     def test_missing_canonical_controller_is_not_silently_skipped(self):

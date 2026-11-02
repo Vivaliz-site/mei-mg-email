@@ -11,8 +11,8 @@
     "Vivaliz-site/mercadolivre-returns-recovery",
     "Vivaliz-site/shopvivaliz-m365",
     "Vivaliz-site/buscador",
-    "fredmourao-ai/mei-mg-email",
-    "fredmourao-ai/solange-rolla-consultorio"
+    "Vivaliz-site/mei-mg-email",
+    "Vivaliz-site/solange-rolla-consultorio"
   ],
   "required_blobs": {
     "AUDIT_POLICY.md": "db4e334917d5d5db35c351bfaa632fb0a3c0319c",
@@ -32,9 +32,9 @@
     "docs/quality/AUDIT_AUTH_CREDENTIAL_DISCOVERY_V1.md": "7d13d31febce025559d3c6628a69c768be36e6dd",
     "docs/quality/AUDIT_PROJECT_REQUIREMENTS_V1.md": "bde5c7e104994243fdd4132ba0e4be9c6c756561",
     "docs/quality/AUDIT_CERTIFICATION_MANIFEST_TEMPLATE.json": "f10d69ea3fa494d379c972ea0a477182044bc046",
-    "scripts/certify-audit-manifest.py": "03e6071c139c6d9bb1c035f3710aa0a699e26c92",
+    "scripts/certify-audit-manifest.py": "e62b8f84457fd79cf13dcda744baf7a20a446665",
     "scripts/validate-audit-governance.py": "321ee1a372da7d74fe5c1285aea2e19d8462a166",
-    "scripts/validate-global-audit-policy.py": "9e93241d34503a6077ae2e2654508b7e1cbede47",
+    "scripts/validate-global-audit-policy.py": "6da85a1882812ef3009ff5a693d4673dbbfcec88",
     "tests/test_certify_audit_manifest.py": "193527268f20f8912bf7a814b0199daf14697e54",
     "AGENTS.override.md": "ebaebc58b87fc482bf273250846eb4f7a9c0a7a1",
     "REGRAS-AGENTES-CENTRALIZADAS.md": "b9d04803732f2c9eb4b2dc77341f1424c7a65d48",

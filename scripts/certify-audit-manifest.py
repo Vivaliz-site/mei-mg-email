@@ -24,8 +24,8 @@ REQUIRED_REPOSITORIES = [
     "Vivaliz-site/mercadolivre-returns-recovery",
     "Vivaliz-site/shopvivaliz-m365",
     "Vivaliz-site/buscador",
-    "fredmourao-ai/mei-mg-email",
-    "fredmourao-ai/solange-rolla-consultorio",
+    "Vivaliz-site/mei-mg-email",
+    "Vivaliz-site/solange-rolla-consultorio",
 ]
 
 REQUIRED_NONEMPTY = [

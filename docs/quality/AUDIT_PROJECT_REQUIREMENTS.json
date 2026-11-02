@@ -1,6 +1,6 @@
 {
   "schema": "AUDIT_PROJECT_REQUIREMENTS_V1",
-  "project": "fredmourao-ai/mei-mg-email",
+  "project": "Vivaliz-site/mei-mg-email",
   "policy_version": "2026-09-21-absolute-v5",
   "required_invariants": [
     {
