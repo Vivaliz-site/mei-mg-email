@@ -11,8 +11,8 @@
     "Vivaliz-site/mercadolivre-returns-recovery",
     "Vivaliz-site/shopvivaliz-m365",
     "Vivaliz-site/buscador",
-    "fredmourao-ai/mei-mg-email",
-    "fredmourao-ai/solange-rolla-consultorio"
+    "Vivaliz-site/mei-mg-email",
+    "Vivaliz-site/solange-rolla-consultorio"
   ],
   "required_blobs": {
     "AUDIT_POLICY.md": "db4e334917d5d5db35c351bfaa632fb0a3c0319c",
