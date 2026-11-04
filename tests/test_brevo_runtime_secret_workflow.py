@@ -33,12 +33,16 @@ def test_cutover_uses_full_history_and_safe_local_fast_forward():
     assert "git reset --hard" not in source
 
 
-def test_materializer_is_fail_closed_and_preserves_backup():
+def test_materializer_is_fail_closed_and_does_not_copy_the_env():
     assert SCRIPT.exists()
     source = SCRIPT.read_text(encoding="utf-8")
     assert "always-free-arm-1787907847-26" in source
     assert "/home/ubuntu/mei-mg-email/.env" in source
-    assert "/home/ubuntu/.shopvivaliz/backups/mei-mg-email" in source
+    # Regression: the full .env (every secret) was copied to a backup directory on each run.
+    assert "copy2" not in source
+    assert "backups/mei-mg-email" not in source
+    assert "BACKUP_DIR" not in source
+    assert "changed_keys=" in source
     assert "BREVO_API_KEY" in source
     assert "EMAIL_PROVIDER" in source
     assert "MAX_ENVIOS_POR_DIA" in source

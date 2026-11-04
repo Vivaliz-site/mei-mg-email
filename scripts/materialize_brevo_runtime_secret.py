@@ -3,14 +3,11 @@ from __future__ import annotations
 
 import argparse
 import os
-import shutil
 import socket
-import time
 from pathlib import Path
 
 EXPECTED_HOSTNAME = "always-free-arm-1787907847-26"
 DEFAULT_ENV_PATH = Path("/home/ubuntu/mei-mg-email/.env")
-BACKUP_DIR = Path("/home/ubuntu/.shopvivaliz/backups/mei-mg-email")
 
 CUTOVER_VALUES = {
     "EMAIL_PROVIDER": "brevo",
@@ -57,11 +54,10 @@ def main() -> int:
     if not args.env_path.is_file():
         raise RuntimeError(f"runtime env not found: {args.env_path}")
 
-    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
-    stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
-    backup = BACKUP_DIR / f"env-before-brevo-key-{stamp}"
-    shutil.copy2(args.env_path, backup)
-
+    # No copy of the runtime .env is kept: it holds unrelated secrets and would outlive
+    # the rotation. Rollback is a re-run that reapplies the previous BREVO_API_KEY from the
+    # secret store (or the Brevo panel); the write below is atomic, so a failure leaves
+    # the old file in place.
     values = {"BREVO_API_KEY": api_key}
     if args.mode == "cutover":
         values.update(CUTOVER_VALUES)
@@ -75,7 +71,7 @@ def main() -> int:
 
     print(f"backend_brevo_key_present=true length={len(api_key)}")
     print(f"mode={args.mode}")
-    print(f"backup={backup}")
+    print("changed_keys=" + ",".join(sorted(values)))
     return 0
 
 
