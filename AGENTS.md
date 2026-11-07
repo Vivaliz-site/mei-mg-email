@@ -1,11 +1,11 @@
 <!-- MANDATORY_AGENT_CHECKLIST_V1 -->
-## Checklist proporcional — revogada a trava universal
+## Checklist proporcional por tarefa (sem gate burocratico universal)
 
-Por determinacao expressa do proprietario em 06/11/2026, a exigencia geral introduzida em 31/10/2026 de criar um plano formal e certificar cada subetapa **nao bloqueia tarefas P0/P1 ja autorizadas**. Execute a tarefa, registre `task_id`, `next_action` e evidencias reais no checkpoint sem exigir `plan-checklist` nem esperar o controlador para cada acao. Nao abandonar trabalho por indisponibilidade momentanea de um registrador: usar rota autorizada e preservar o progresso.
+Conforme a autorizacao expressa do proprietario em 06/11/2026, a exigencia introduzida em 31/10/2026 de criar plano e marcar `check-step` antes de CADA acao foi revogada. Nenhuma tarefa P0/P1 ja autorizada deve ficar bloqueada apenas por ausencia de `plan-checklist`, falha de conexao com o controlador, exigencia repetida de aprovar um plano ou preflight por subcomando. Registre a proxima acao e evidencias no checkpoint disponivel e continue a investigar, corrigir, testar e validar; nunca inventar checkpoints ou perder trabalho anterior.
 
-Checklists explicitos continuam disponiveis por `SHOPVIVALIZ_REQUIRE_AGENT_CHECKLIST=1` ou `plan-checklist`, com `next-step`, `check-step` e `add-checklist-step` quando a complexidade justificar. Itens planejados e evidencias ja registrados nao podem ser apagados ou falsificados. Checklists automaticamente vazios de checkpoints legados nao bloqueiam o progresso. `ready` e `complete` exigem, independentemente disso, provas da meta original, correcao, testes, regressao e E2E/deploy quando aplicavel.
+Quando for materialmente util, o agente pode usar `scripts/agent_task_state.py` e seu checklist opcional. Se ja houver etapas formalmente planejadas, preservar integridade, ordem, provas e validacao dessas etapas. Checkpoints historicos com checklist vazio nao devem impedir progresso nem encerramento com evidencia real. Nao abrir autorizacoes duplicadas para grants ja concedidos.
 
-Continuam MFA, RBAC, segredos, branch protection, leases/fencing, revisao humana formal em operacoes protegidas, controles financeiros/comerciais e recusas explicitas dos provedores. Nao reintroduzir restricoes burocraticas nao aprovadas por meio de testes, agentes ou workflows.
+A simplificacao NAO remove MFA, RBAC, segredos, leases/fencing, separacao de identidades, protecoes de branch e CI, controle de alteracoes comerciais, revisao humana formal quando exigida nem a obrigacao de validar resultados reais. Nao criar novas restricoes operacionais sem aprovacao do proprietario. Regra de referencia: `Vivaliz-site/site-shopvivaliz/REGRAS-AGENTES-CENTRALIZADAS.md` (`OWNER_GLOBAL_GOVERNANCE_RELIEF_20261106`).
 <!-- /MANDATORY_AGENT_CHECKLIST_V1 -->
 
 <!-- AUDIT_UI_EVIDENCE_INTEGRITY_V2 -->
