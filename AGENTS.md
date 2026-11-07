@@ -1,11 +1,11 @@
 <!-- MANDATORY_AGENT_CHECKLIST_V1 -->
-## Checklist proporcional por tarefa (sem gate burocratico universal)
+## Checklist proporcional: sem bloqueio global para tarefas rotineiras
 
-Conforme a autorizacao expressa do proprietario em 06/11/2026, a exigencia introduzida em 31/10/2026 de criar plano e marcar `check-step` antes de CADA acao foi revogada. Nenhuma tarefa P0/P1 ja autorizada deve ficar bloqueada apenas por ausencia de `plan-checklist`, falha de conexao com o controlador, exigencia repetida de aprovar um plano ou preflight por subcomando. Registre a proxima acao e evidencias no checkpoint disponivel e continue a investigar, corrigir, testar e validar; nunca inventar checkpoints ou perder trabalho anterior.
+**Revisao por determinacao do proprietario (06/11/2026):** foi revogada a obrigatoriedade universal de planejar e certificar um checklist a cada etapa, introduzida em 31/10/2026. A ausencia de `plan-checklist` nao pode impedir `record_progress`, retomada, correcao, teste ou conclusao de tarefas P0/P1 que ja possuam autorizacao. Um checkpoint duravel e uma proxima acao concreta continuam suficientes para registrar o trabalho; nao criar processo de aprovacao por subcomando.
 
-Quando for materialmente util, o agente pode usar `scripts/agent_task_state.py` e seu checklist opcional. Se ja houver etapas formalmente planejadas, preservar integridade, ordem, provas e validacao dessas etapas. Checkpoints historicos com checklist vazio nao devem impedir progresso nem encerramento com evidencia real. Nao abrir autorizacoes duplicadas para grants ja concedidos.
+`scripts/agent_task_state.py` deixa de injetar automaticamente um checklist exigivel em novos checkpoints do runtime canonico. Checkpoints anteriores com lista **vazia** nao ficam presos por um plano nunca iniciado. Para trabalhos que precisam de checklist formal, o executor pode ativar `SHOPVIVALIZ_REQUIRE_AGENT_CHECKLIST=1` no escopo do fluxo e usar `plan-checklist`, `next-step`, `check-step` e `add-checklist-step`. Se ja existem etapas planejadas, suas evidencias e integridade continuam obrigatorias para encerrar; nao apagar nem certificar etapas sem comprovacao.
 
-A simplificacao NAO remove MFA, RBAC, segredos, leases/fencing, separacao de identidades, protecoes de branch e CI, controle de alteracoes comerciais, revisao humana formal quando exigida nem a obrigacao de validar resultados reais. Nao criar novas restricoes operacionais sem aprovacao do proprietario. Regra de referencia: `Vivaliz-site/site-shopvivaliz/REGRAS-AGENTES-CENTRALIZADAS.md` (`OWNER_GLOBAL_GOVERNANCE_RELIEF_20261106`).
+Essa desburocratizacao nao autoriza falso sucesso nem remove controles independentes: identidade, MFA, RBAC, segredos, lease/fencing, aprovacoes humanas formalmente necessarias, branch protection, gates de operacoes comerciais, CI e validacao funcional/E2E pertinente. Nenhum controle novo deve ser imposto sem aprovacao do proprietario.
 <!-- /MANDATORY_AGENT_CHECKLIST_V1 -->
 
 <!-- AUDIT_UI_EVIDENCE_INTEGRITY_V2 -->
