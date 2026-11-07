@@ -13,15 +13,22 @@ REQUIRED = ("AGENTS.md", "CLAUDE.md", "GEMINI.md", ".github/copilot-instructions
 MARKER = "MANDATORY_AGENT_CHECKLIST_V1"
 
 class AgentChecklistContractTests(unittest.TestCase):
-    def test_every_agent_entrypoint_requires_durable_step_evidence(self):
+    def test_every_agent_entrypoint_keeps_proportional_checklist_and_security(self):
         for path in REQUIRED:
             with self.subTest(path=path):
                 data = (ROOT / path).read_text(encoding="utf-8")
                 self.assertIn(MARKER, data)
-                self.assertIn("plan-checklist", data)
-                self.assertIn("check-step", data)
-                self.assertIn("next-step", data)
-                self.assertIn("BLOCKED_EXTERNAL", data)
+                section = data.split("<!-- MANDATORY_AGENT_CHECKLIST_V1 -->", 1)[1].split(
+                    "<!-- /MANDATORY_AGENT_CHECKLIST_V1 -->", 1
+                )[0]
+                self.assertIn("Checklist proporcional", section)
+                self.assertNotIn("Checklist de execucao obrigatorio", section)
+                self.assertIn("MFA", section)
+                self.assertIn("RBAC", section)
+                self.assertIn("branch", section.lower())
+                # The step adapter remains usable when an explicit plan exists,
+                # but cannot be made a blanket prerequisite for P0/P1 work.
+                self.assertIn("sem", section.lower())
 
     def test_required_ci_executes_this_test_and_covers_entrypoints(self):
         path = ROOT / ".github/workflows/task-continuity-contract.yml"
