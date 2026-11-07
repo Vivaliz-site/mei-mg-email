@@ -13,15 +13,20 @@ REQUIRED = ("AGENTS.md", "CLAUDE.md", "GEMINI.md", ".github/copilot-instructions
 MARKER = "MANDATORY_AGENT_CHECKLIST_V1"
 
 class AgentChecklistContractTests(unittest.TestCase):
-    def test_every_agent_entrypoint_requires_durable_step_evidence(self):
+    def test_every_agent_entrypoint_preserves_proofs_without_universal_plan_gate(self):
         for path in REQUIRED:
             with self.subTest(path=path):
                 data = (ROOT / path).read_text(encoding="utf-8")
                 self.assertIn(MARKER, data)
-                self.assertIn("plan-checklist", data)
-                self.assertIn("check-step", data)
-                self.assertIn("next-step", data)
-                self.assertIn("BLOCKED_EXTERNAL", data)
+                self.assertIn("Checklist proporcional", data)
+                self.assertNotIn("## Checklist de execucao obrigatorio", data)
+                self.assertIn("MFA", data)
+                self.assertIn("RBAC", data)
+                self.assertIn("prova", data.lower())
+                if path != ".github/copilot-instructions.md":
+                    self.assertIn("plan-checklist", data)
+                    self.assertIn("check-step", data)
+                    self.assertIn("next-step", data)
 
     def test_required_ci_executes_this_test_and_covers_entrypoints(self):
         path = ROOT / ".github/workflows/task-continuity-contract.yml"
