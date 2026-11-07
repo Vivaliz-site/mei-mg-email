@@ -1,11 +1,11 @@
 <!-- MANDATORY_AGENT_CHECKLIST_V1 -->
-## Checklist proporcional — revogada a trava universal
+## Checklist proporcional: sem bloqueio global para tarefas rotineiras
 
-Por determinacao expressa do proprietario em 06/11/2026, a exigencia geral introduzida em 31/10/2026 de criar um plano formal e certificar cada subetapa **nao bloqueia tarefas P0/P1 ja autorizadas**. Execute a tarefa, registre `task_id`, `next_action` e evidencias reais no checkpoint sem exigir `plan-checklist` nem esperar o controlador para cada acao. Nao abandonar trabalho por indisponibilidade momentanea de um registrador: usar rota autorizada e preservar o progresso.
+**Revisao por determinacao do proprietario (06/11/2026):** foi revogada a obrigatoriedade universal de planejar e certificar um checklist a cada etapa, introduzida em 31/10/2026. A ausencia de `plan-checklist` nao pode impedir `record_progress`, retomada, correcao, teste ou conclusao de tarefas P0/P1 que ja possuam autorizacao. Um checkpoint duravel e uma proxima acao concreta continuam suficientes para registrar o trabalho; nao criar processo de aprovacao por subcomando.
 
-Checklists explicitos continuam disponiveis por `SHOPVIVALIZ_REQUIRE_AGENT_CHECKLIST=1` ou `plan-checklist`, com `next-step`, `check-step` e `add-checklist-step` quando a complexidade justificar. Itens planejados e evidencias ja registrados nao podem ser apagados ou falsificados. Checklists automaticamente vazios de checkpoints legados nao bloqueiam o progresso. `ready` e `complete` exigem, independentemente disso, provas da meta original, correcao, testes, regressao e E2E/deploy quando aplicavel.
+`scripts/agent_task_state.py` deixa de injetar automaticamente um checklist exigivel em novos checkpoints do runtime canonico. Checkpoints anteriores com lista **vazia** nao ficam presos por um plano nunca iniciado. Para trabalhos que precisam de checklist formal, o executor pode ativar `SHOPVIVALIZ_REQUIRE_AGENT_CHECKLIST=1` no escopo do fluxo e usar `plan-checklist`, `next-step`, `check-step` e `add-checklist-step`. Se ja existem etapas planejadas, suas evidencias e integridade continuam obrigatorias para encerrar; nao apagar nem certificar etapas sem comprovacao.
 
-Continuam MFA, RBAC, segredos, branch protection, leases/fencing, revisao humana formal em operacoes protegidas, controles financeiros/comerciais e recusas explicitas dos provedores. Nao reintroduzir restricoes burocraticas nao aprovadas por meio de testes, agentes ou workflows.
+Essa desburocratizacao nao autoriza falso sucesso nem remove controles independentes: identidade, MFA, RBAC, segredos, lease/fencing, aprovacoes humanas formalmente necessarias, branch protection, gates de operacoes comerciais, CI e validacao funcional/E2E pertinente. Nenhum controle novo deve ser imposto sem aprovacao do proprietario.
 <!-- /MANDATORY_AGENT_CHECKLIST_V1 -->
 
 <!-- EXTREME_AUDIT_UI_FIRST_HARD_GATE_V1 -->
