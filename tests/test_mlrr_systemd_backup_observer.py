@@ -18,7 +18,9 @@ spec.loader.exec_module(module)
 
 TRUSTED_WRAPPER = (
     "#!/bin/sh\n"
+    "set -eu\n"
     "HELPER=/usr/local/sbin/shopvivaliz-db-backup.py\n"
+    '[ -x "$HELPER" ] || { echo "missing canonical backup helper: $HELPER" >&2; exit 1; }\n'
     'exec "$HELPER" --profile secondary --target mlrr-phase3\n'
 )
 TRUSTED_SOURCE = (
@@ -46,6 +48,49 @@ class MarinaMlrrBackupObserverTests(unittest.TestCase):
 
     def test_real_pinned_writer_contract_can_be_verified(self):
         self.assert_contract()
+
+    def test_full_wrapper_allowlist_rejects_extra_shell_commands(self):
+        """An extra foreground/background writer may never be certified."""
+        valid = TRUSTED_WRAPPER
+        extra = (
+            ("background_before_exec",
+             valid.replace(
+                 'exec "$HELPER" --profile secondary --target mlrr-phase3',
+                 '"$HELPER" --profile secondary --target mlrr-phase3 &\n'
+                 'exec "$HELPER" --profile secondary --target mlrr-phase3')),
+            ("foreground_before_exec",
+             valid.replace(
+                 'exec "$HELPER" --profile secondary --target mlrr-phase3',
+                 'echo unexpected-command\n'
+                 'exec "$HELPER" --profile secondary --target mlrr-phase3')),
+            ("extra_command_after_exec",
+             valid + 'echo unreachable-but-untrusted\n'),
+            ("extra_command_before_guard",
+             valid.replace("set -eu\n", "set -eu\necho unauthorized\n")),
+            ("background_between_guard_and_exec",
+             valid.replace(
+                 'exec "$HELPER" --profile secondary',
+                 'sh -c "echo another-writer" &\n'
+                 'exec "$HELPER" --profile secondary')),
+            ("guard_replaced_by_hidden_writer",
+             valid.replace(
+                 '[ -x "$HELPER" ] ||',
+                 '[ -x "$HELPER" ] && "$HELPER" --profile secondary --target mlrr-phase3 & ||')),
+            ("subshell_in_assignment",
+             valid.replace(
+                 "HELPER=/usr/local/sbin/shopvivaliz-db-backup.py",
+                 "HELPER=$(echo /usr/local/sbin/shopvivaliz-db-backup.py)")),
+            ("removed_errexit", valid.replace("set -eu\n", "")),
+            ("altered_guard", valid.replace("missing canonical backup helper", "different helper error")),
+            ("extra_comment", valid + '# unauthorized content\n'),
+            ("extra_blank_line", valid + '\n'),
+        )
+        for label, wrapper in extra:
+            with self.subTest(label=label):
+                with self.assertRaisesRegex(
+                    module.reader.VerificationError, "MLRR_BACKUP_WRAPPER_MISMATCH"
+                ):
+                    self.assert_contract(wrapper=wrapper)
 
     def test_wrong_host_never_queries_or_certifies_other_machine(self):
         with patch.object(module.socket, "gethostname", return_value="always-free-arm-1787907847-26"):

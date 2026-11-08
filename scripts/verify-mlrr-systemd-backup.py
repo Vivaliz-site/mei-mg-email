@@ -22,6 +22,16 @@ WRAPPER = Path("/usr/local/sbin/shopvivaliz-db-backup")
 RUNTIME_SCRIPT = Path("/usr/local/sbin/shopvivaliz-db-backup.py")
 DUMP_OBJECT = "db-backups/secondary/mlrr-phase3-latest.dump"
 EXPECTED_HOST = "marina-a1-4c24g"
+# Exact five-line root-owned script installed on Marina, verified by read-only
+# inspection on 2026-11-08. A two-line substring test is insufficient: an
+# additional foreground/background invocation could start a competing writer.
+CANONICAL_WRAPPER = (
+    "#!/bin/sh\n"
+    "set -eu\n"
+    "HELPER=/usr/local/sbin/shopvivaliz-db-backup.py\n"
+    '[ -x "$HELPER" ] || { echo "missing canonical backup helper: $HELPER" >&2; exit 1; }\n'
+    'exec "$HELPER" --profile secondary --target mlrr-phase3\n'
+)
 EXPECTED_TARGET = {
     "name": "mlrr-phase3", "container": "mlrr-pg-prod",
     "user": "postgres", "database": "mlrr_phase3", "mode": "container",
@@ -54,11 +64,10 @@ def validate_single_writer() -> None:
         source = RUNTIME_SCRIPT.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
         raise reader.VerificationError("MLRR_BACKUP_WRITER_UNREADABLE") from exc
-    required_lines = (
-        "HELPER=/usr/local/sbin/shopvivaliz-db-backup.py",
-        'exec "$HELPER" --profile secondary --target mlrr-phase3',
-    )
-    if any(wrapper.splitlines().count(line) != 1 for line in required_lines):
+    # Fail closed on *all* wrapper drift, including background jobs, injected
+    # shell statements, extra trailing commands, and replaced safety guards.
+    # This inspects text only; neither the wrapper nor the backup is executed.
+    if wrapper != CANONICAL_WRAPPER:
         raise reader.VerificationError("MLRR_BACKUP_WRAPPER_MISMATCH")
 
     try:
