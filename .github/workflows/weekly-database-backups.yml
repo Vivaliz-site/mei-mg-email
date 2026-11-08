@@ -17,9 +17,19 @@ jobs:
     name: Backup main host databases
     runs-on: [self-hosted, mei-backend]
     timeout-minutes: 60
+    # Each database is independently attempted. A legacy DB failure must never
+    # suppress the unrelated Mei backup, and must still fail the overall job.
     steps:
-      - name: Run verified main database backups
-        run: /home/ubuntu/.local/bin/shopvivaliz-db-backup.py --profile main
+      - name: Back up local Solange production database
+        run: /home/ubuntu/.local/bin/shopvivaliz-db-backup.py --profile main --target solange-production
+
+      - name: Verify legacy local Solange demo database backup
+        if: ${{ !cancelled() }}
+        run: /home/ubuntu/.local/bin/shopvivaliz-db-backup.py --profile main --target solange-staging
+
+      - name: Back up Mei email database independently
+        if: ${{ !cancelled() }}
+        run: /home/ubuntu/.local/bin/shopvivaliz-db-backup.py --profile main --target mei-email
 
   secondary-host:
     name: Backup secondary host databases
