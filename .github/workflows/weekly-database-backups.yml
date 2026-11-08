@@ -23,7 +23,7 @@ jobs:
     # Verify that offsite artifact, never start a duplicate uploader here.
     steps:
       - name: Check out read-only backup verifier
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
 
