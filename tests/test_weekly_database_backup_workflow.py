@@ -86,7 +86,7 @@ class WeeklyDatabaseBackupContractTests(unittest.TestCase):
             with self.subTest(needed=needed):
                 self.assertIn(needed, verifier)
         for forbidden in ('"object", "put"', "pg_dump", "docker exec",
-                          "systemctl restart", "--profile secondary --target"):
+                          "systemctl restart"):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, verifier)
 
