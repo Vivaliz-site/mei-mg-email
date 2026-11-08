@@ -28,11 +28,11 @@ jobs:
           persist-credentials: false
 
       - name: Back up local Solange production database
-        run: /home/ubuntu/.local/bin/shopvivaliz-db-backup.py --profile main --target solange-production
+        run: python3 scripts/ops/shopvivaliz-db-backup.py --profile main --target solange-production
 
       - name: Verify legacy local Solange demo database backup
         if: ${{ !cancelled() }}
-        run: /home/ubuntu/.local/bin/shopvivaliz-db-backup.py --profile main --target solange-staging
+        run: python3 scripts/ops/shopvivaliz-db-backup.py --profile main --target solange-staging
 
       - name: Verify independent Mei email backup without a second writer
         if: ${{ !cancelled() }}
