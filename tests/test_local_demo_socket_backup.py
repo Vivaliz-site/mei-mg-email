@@ -121,6 +121,39 @@ class LocalDemoSocketBackupTest(TestCase):
                         mod.host_socket_dump(self.target, dest)
                     run.assert_called_once()
 
+    def test_lock_is_scoped_to_exact_local_target_and_fails_on_contention(self):
+        import fcntl
+        with TemporaryDirectory() as td:
+            with patch.object(mod, "LOCK_DIR", Path(td) / "locks"):
+                with patch.object(mod, "backup_target") as backup:
+                    mod.locked_backup_target("main", self.target)
+                    backup.assert_called_once()
+                lockfile = mod.LOCK_DIR / "solange-staging.lock"
+                self.assertEqual(lockfile.stat().st_mode & 0o777, 0o600)
+                with open(lockfile, "rb") as holder:
+                    fcntl.flock(holder.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    with patch.object(mod, "backup_target") as backup:
+                        with self.assertRaisesRegex(
+                            RuntimeError, "local_backup_target_already_running"
+                        ):
+                            mod.locked_backup_target("main", self.target)
+                        backup.assert_not_called()
+                    fcntl.flock(holder.fileno(), fcntl.LOCK_UN)
+
+    def test_lock_refuses_other_profiles_or_targets(self):
+        with TemporaryDirectory() as td:
+            with patch.object(mod, "LOCK_DIR", Path(td) / "locks"):
+                for profile, target in (
+                    ("secondary", self.target),
+                    ("main", {"name": "mei-email"}),
+                    ("main", {"name": "unknown"}),
+                ):
+                    with self.subTest(profile=profile, target=target):
+                        with self.assertRaisesRegex(
+                            RuntimeError, "unrecognized_scheduled_local_backup_target"
+                        ):
+                            mod.locked_backup_target(profile, target)
+
     def test_sudo_denial_is_not_bypassed_or_retried_insecurely(self):
         failure = subprocess.CalledProcessError(1, ["sudo", "-n", "/usr/bin/pg_dump"])
         with TemporaryDirectory() as td:

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import argparse
+import fcntl
+import stat
 import hashlib
 import json
 import os
@@ -197,6 +199,42 @@ def verify_remote_copy(name, expected_size, expected_digest):
         return entries
 
 
+LOCK_DIR = Path("/home/ubuntu/.local/state/shopvivaliz-backup-locks")
+
+
+def locked_backup_target(profile, target):
+    """Per-database host-local lease, held through OCI upload and readback.
+
+    The lock file is persistent on purpose, but the kernel releases the FLOCK
+    automatically when the process exits, including in cancelled Actions.
+    """
+    if profile != "main" or target.get("name") not in (
+            "solange-production", "solange-staging"):
+        raise RuntimeError("unrecognized_scheduled_local_backup_target")
+    LOCK_DIR.mkdir(mode=0o700, parents=True, exist_ok=True)
+    directory = LOCK_DIR.lstat()
+    if (not stat.S_ISDIR(directory.st_mode)
+            or directory.st_uid != os.geteuid()
+            or stat.S_IMODE(directory.st_mode) != 0o700):
+        raise RuntimeError("unsafe_local_backup_lock_directory")
+    lock_path = LOCK_DIR / (target["name"] + ".lock")
+    flags = os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW | os.O_CLOEXEC
+    fd = os.open(lock_path, flags, 0o600)
+    try:
+        lock_stat = os.fstat(fd)
+        if (not stat.S_ISREG(lock_stat.st_mode)
+                or lock_stat.st_uid != os.geteuid()
+                or stat.S_IMODE(lock_stat.st_mode) != 0o600):
+            raise RuntimeError("unsafe_local_backup_lock_file")
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise RuntimeError("local_backup_target_already_running") from exc
+        backup_target(profile, target)
+    finally:
+        os.close(fd)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--profile", choices=sorted(PROFILES), required=True)
@@ -208,7 +246,10 @@ def main():
         if not targets:
             raise SystemExit(f"unknown target: {args.target}")
     for target in targets:
-        backup_target(args.profile, target)
+        if args.profile == "main" and target["name"] in ("solange-production", "solange-staging"):
+            locked_backup_target(args.profile, target)
+        else:
+            backup_target(args.profile, target)
 
 
 if __name__ == "__main__":
