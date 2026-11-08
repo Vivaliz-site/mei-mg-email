@@ -2,7 +2,8 @@ name: Weekly database backups
 
 on:
   schedule:
-    - cron: '30 4 * * 0'
+    # Allow the existing systemd Mei backup timer (Sun 04:30 UTC) to finish.
+    - cron: '15 6 * * 0'
   workflow_dispatch:
 
 permissions:
@@ -17,9 +18,25 @@ jobs:
     name: Backup main host databases
     runs-on: [self-hosted, mei-backend]
     timeout-minutes: 60
+    # Solange local targets are attempted independently; failure remains RED.
+    # Mei is already backed up by a separate systemd single writer at 04:30 UTC.
+    # Verify that offsite artifact, never start a duplicate uploader here.
     steps:
-      - name: Run verified main database backups
-        run: /home/ubuntu/.local/bin/shopvivaliz-db-backup.py --profile main
+      - name: Check out read-only backup verifier
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Back up local Solange production database
+        run: /home/ubuntu/.local/bin/shopvivaliz-db-backup.py --profile main --target solange-production
+
+      - name: Verify legacy local Solange demo database backup
+        if: ${{ !cancelled() }}
+        run: /home/ubuntu/.local/bin/shopvivaliz-db-backup.py --profile main --target solange-staging
+
+      - name: Verify independent Mei email backup without a second writer
+        if: ${{ !cancelled() }}
+        run: python3 scripts/verify-mei-systemd-backup.py
 
   secondary-host:
     name: Backup secondary host databases
