@@ -47,7 +47,7 @@ def connection_for(target):
         env[key] = value
     user = target.get("user") or env.get("POSTGRES_USER")
     database = target.get("database") or env.get("POSTGRES_DB")
-    password = [REDACTED], "")
+    password = env.get("POSTGRES_PASSWORD", "")
     ports = info["NetworkSettings"]["Ports"].get("5432/tcp") or []
     if not ports:
         raise RuntimeError(f"no published postgres port for {target['container']}")
