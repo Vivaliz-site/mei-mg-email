@@ -77,7 +77,7 @@ def validate_single_writer() -> None:
     service = reader.command(
         "systemctl", "show", reader.BACKUP_SERVICE, "-p", "ExecStart",
     )
-    if not re.search(r"\b/usr/local/sbin/shopvivaliz-db-backup\b", service):
+    if not re.search(r"(?:^|[\s{])path=/usr/local/sbin/shopvivaliz-db-backup(?=[\s;}]|$)", service):
         raise reader.VerificationError("MLRR_BACKUP_SERVICE_EXEC_MISMATCH")
 
 
