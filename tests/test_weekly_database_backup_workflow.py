@@ -6,7 +6,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github/workflows/weekly-database-backups.yml"
 BACKUP_COMMAND = "python3 scripts/ops/shopvivaliz-db-backup.py"
-SECONDARY_COMMAND = "/home/ubuntu/.local/bin/shopvivaliz-db-backup.py"
+SECONDARY_VERIFY_COMMAND = "python3 scripts/verify-mlrr-systemd-backup.py"
 VERIFY_COMMAND = "python3 scripts/verify-mei-systemd-backup.py"
 
 
@@ -61,12 +61,34 @@ class WeeklyDatabaseBackupContractTests(unittest.TestCase):
             "timeout-minutes: 60",
             "timeout-minutes: 30",
             "group: weekly-database-backups",
-            "run: " + SECONDARY_COMMAND + " --profile secondary",
+            "run: " + SECONDARY_VERIFY_COMMAND,
         ):
             with self.subTest(contract=contract):
                 self.assertIn(contract, self.text)
         self.assertEqual(self.text.count(BACKUP_COMMAND), 2)
-        self.assertEqual(self.text.count(SECONDARY_COMMAND), 1)
+        self.assertEqual(self.text.count(SECONDARY_VERIFY_COMMAND), 1)
+        self.assertNotIn("/home/ubuntu/.local/bin/shopvivaliz-db-backup.py", self.secondary)
+        self.assertIn("uses: actions/checkout@v6", self.secondary)
+        self.assertIn("persist-credentials: false", self.secondary)
+
+    def test_secondary_runner_only_attests_an_existing_MLRR_systemd_writer(self):
+        self.assertIn("runs-on: [self-hosted, mei-ci]", self.secondary)
+        self.assertIn("run: " + SECONDARY_VERIFY_COMMAND, self.secondary)
+        self.assertNotIn("--profile secondary", self.secondary)
+        self.assertNotIn("continue-on-error:", self.secondary)
+        verifier = (ROOT / "scripts/verify-mlrr-systemd-backup.py").read_text(
+            encoding="utf-8")
+        for needed in ("marina-a1-4c24g", "mlrr-phase3",
+                       "db-backups/secondary/mlrr-phase3-latest.dump",
+                       "/usr/local/sbin/shopvivaliz-db-backup.py",
+                       "MLRR_SYSTEMD_BACKUP_READBACK=PASS",
+                       "MLRR_SYSTEMD_BACKUP_READBACK=FAIL"):
+            with self.subTest(needed=needed):
+                self.assertIn(needed, verifier)
+        for forbidden in ('"object", "put"', "pg_dump", "docker exec",
+                          "systemctl restart"):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, verifier)
 
     def test_verifier_never_runs_backup_or_writes_remote_objects(self):
         script = (ROOT / "scripts/verify-mei-systemd-backup.py").read_text(

@@ -39,9 +39,16 @@ jobs:
         run: python3 scripts/verify-mei-systemd-backup.py
 
   secondary-host:
-    name: Backup secondary host databases
+    name: Verify Marina MLRR systemd database backup
     runs-on: [self-hosted, mei-ci]
     timeout-minutes: 30
+    # The MLRR writer already runs on Marina on Sunday at 04:30 UTC.
+    # Never launch a second writer to the same OCI Object Storage key.
     steps:
-      - name: Run verified secondary database backups
-        run: /home/ubuntu/.local/bin/shopvivaliz-db-backup.py --profile secondary
+      - name: Check out read-only MLRR backup verifier
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Verify Marina MLRR systemd backup without a second writer
+        run: python3 scripts/verify-mlrr-systemd-backup.py
