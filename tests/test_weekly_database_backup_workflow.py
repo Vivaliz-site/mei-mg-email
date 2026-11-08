@@ -5,7 +5,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github/workflows/weekly-database-backups.yml"
-BACKUP_COMMAND = "/home/ubuntu/.local/bin/shopvivaliz-db-backup.py"
+BACKUP_COMMAND = "python3 scripts/ops/shopvivaliz-db-backup.py"
 VERIFY_COMMAND = "python3 scripts/verify-mei-systemd-backup.py"
 
 
