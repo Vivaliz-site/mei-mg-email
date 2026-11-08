@@ -28,7 +28,7 @@ class WeeklyDatabaseBackupContractTests(unittest.TestCase):
     def test_main_job_has_two_local_targets_and_read_only_mei_verification(self):
         steps = self.steps()
         self.assertEqual(len(steps), 4)
-        self.assertIn("uses: actions/checkout@v4", steps[0][1])
+        self.assertIn("uses: actions/checkout@v6", steps[0][1])
         self.assertIn("persist-credentials: false", steps[0][1])
         for index, target in ((1, "solange-production"), (2, "solange-staging")):
             self.assertIn(
