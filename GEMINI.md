@@ -1,3 +1,17 @@
+<!-- OWNER_ONLY_RESTRICTIONS_20261110 -->
+## Exclusividade do proprietário para criar ou agravar restrições (10/11/2026)
+
+**Determinação mais recente do proprietário, válida para TODOS os repositórios, agentes e ambientes ShopVivaliz. Esta regra substitui, neste assunto, a política de dupla aprovação de 08/11/2026.**
+
+- SOMENTE o próprio proprietário pode executar a inclusão, restauração ou ampliação de bloqueios, restrições, travas, gates, exigências de aprovação, negações de acesso ou qualquer regra/configuração que impeça, condicione ou atrase execuções, acessos, operações, comandos, automações, CI/CD, PRs, merge ou deploy.
+- NENHUM agente, bot ou automação (GPT, Claude, Codex, Gemini, Copilot, Ollama, MCP, GitHub Actions, subagentes) pode introduzir tais mudanças, nem por commit, pull request, edição direta, workflow, ruleset, código, infraestrutura, configuração, políticas de acesso ou documento de governança. A mera aprovação, revisão dupla ou autorização de uma PR NÃO transfere ao agente o poder de implementar.
+- Ao identificar uma restrição que considere necessária, o agente deve apresentar ao proprietário justificativa, impactos, riscos, alternativas, **comandos completos para execução pessoal**, validação e reversão. O agente não deve implementar, publicar ou preparar uma PR que contenha a inclusão restritiva.
+- Correções técnicas, refatorações, ajustes de observabilidade e remoções/reduções de travas indevidas seguem o fluxo normal autorizado, desde que não introduzam outra restrição no mesmo diff.
+- Esta decisão não desativa automaticamente MFA, RBAC, regras de plataforma, proteções GitHub, mecanismos de segurança exigidos por terceiros ou aprovações independentes anteriormente existentes.
+- As PRs e comunicações de agentes continuam obrigatoriamente em **português brasileiro (pt-BR)**, preservando termos técnicos, código e caminhos.
+- **Exceção única de implantação:** em 10/11/2026 o proprietário determinou expressamente que GPT aplicasse esta atualização inicial. Isso não autoriza agentes a criar futuras restrições, mesmo se aprovadas.
+<!-- /OWNER_ONLY_RESTRICTIONS_20261110 -->
+
 <!-- MANDATORY_AGENT_CHECKLIST_V1 -->
 ## Checklist proporcional: sem bloqueio global para tarefas rotineiras
 
