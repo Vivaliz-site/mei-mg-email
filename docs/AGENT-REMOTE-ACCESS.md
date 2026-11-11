@@ -1,17 +1,17 @@
-# Acesso remoto dos agentes MEI-MG — topologia vigente 2026-10-29
+# Acesso remoto dos agentes MEI-MG — rotas verificadas 2026-11-11
 
 Este documento é obrigatório para tarefas de VM, email, API, runtime, deploy, logs, navegador ou recuperação. Fonte superior e atualizada: `Vivaliz-site/site-shopvivaliz/docs/knowledge/current-topology-and-access-2026-10-29.md` e `host-access.md` no `main`.
 
 ## Hosts e rotas efetivas
 
-- `marina-a1-4c24g` (**OCI ESPOSA**) — produção web/deploy/MySQL/workers. RDC direto está comprovado; escolher o dispositivo pelo nome em `list_devices` e validar identidade e privilégio. SSH/VCN/Tailscale/RDC2 somente com teste independente.
+- `marina-a1-4c24g` (**OCI ESPOSA**) — produção web/deploy/MySQL/workers. Rota principal **ShopVivaliz Remote Control MCP**; chamada administrativa nativa de 11/11/2026 confirmou `marina-a1-4c24g`/`ubuntu`, exit 0. Verificar grant e lease antes de cada mutação.
 - `always-free-arm-1787907847-26` (**OCI PRINCIPAL**) — backend/controlador MCP/MEI-MG/M365/browser corporativo. ShopVivaliz Remote Control é a rota central para hosts válidos da allowlist. Verificar `hosts_list`/`host_health` antes de executar.
 - `shopvivaliz-free-a1` (**excluída**) — **NUNCA** usar `10.0.1.112`, alias SSH, túnel legado, chave associada, retries ou recuperação de runner; não recriar.
 - Fred-Win e KOCEPSV são estações auxiliares e não hosts de produção.
 
 ## MCP e acesso privado
 
-O MCP central **já não anuncia a origem**, após correção implantada no backend (PR #3391); continua sem expor Marina. O MCP independente da Marina foi codificado em staging read-only, mas seus serviços/tunnel-client estão inativos e a vinculação ao ChatGPT não foi comprovada. Cloudflare admin ativo não valida app. Para Marina, preferir RDC direto atualmente comprovado, com identidade/escopo validado; SSH privado/Tailscale são alternativas somente quando provisionados. OCI Bastion/Run Command/console e GitHub são recuperação/bootstrap formal, não transporte contínuo nem bypass de recusa explícita.
+O MCP central atual anuncia backend, Marina, Fred-Win e KOCEPSV; a origem excluída não integra o catálogo. A rota administrativa da Marina foi testada via MCP nativo em 11/11/2026. O MCP independente da Marina requer verificação de identidade e grant próprios; um serviço Cloudflare ativo isoladamente não comprova autenticação. Para operações normais usar o MCP central; SSH privado/Tailscale é mecanismo separado de recuperação autorizada, não atalho após negativa de segurança.
 
 O navegador de agentes e seus perfis Dev/Atendimento permanecem no backend, preservando sessões e MFA, sem cópia de cookies. Não copiar chaves privadas ou secretos entre tenants/hosts.
 
