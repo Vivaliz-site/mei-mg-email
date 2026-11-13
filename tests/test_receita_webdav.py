@@ -237,3 +237,34 @@ def test_upsert_sql_prevents_reimport_of_suppressed_targets():
     assert "is_cnpj_suppressed" in sql
     assert "is_email_suppressed" in sql
     assert "from (values" in sql
+
+
+def test_webdav_source_last_modified_uses_authoritative_http_date():
+    from datetime import datetime, timezone
+
+    payload = b'''<?xml version="1.0"?>
+<d:multistatus xmlns:d="DAV:"><d:response>
+<d:href>/public.php/webdav/2026-11/Estabelecimentos0.zip</d:href>
+<d:propstat><d:prop>
+<d:displayname>Estabelecimentos0.zip</d:displayname>
+<d:getcontentlength>1024</d:getcontentlength>
+<d:getlastmodified>Fri, 13 Nov 2026 16:00:00 GMT</d:getlastmodified>
+</d:prop></d:propstat>
+</d:response></d:multistatus>'''
+    item, = receita.parse_propfind_entries(payload)
+    assert item.last_modified == datetime(2026, 11, 13, 16, tzinfo=timezone.utc)
+
+
+def test_snapshot_uses_oldest_archive_modification_and_never_invents_timestamp():
+    from dataclasses import replace
+    from datetime import datetime, timedelta, timezone
+
+    latest = datetime(2026, 11, 13, 16, tzinfo=timezone.utc)
+    entries = [replace(_entry(f"Estabelecimentos{i}.zip"), last_modified=latest) for i in range(10)]
+    entries[3] = replace(entries[3], last_modified=latest - timedelta(hours=72))
+    manifest = receita.build_manifest("2026-11", entries, "https://host/public.php/webdav/2026-11")
+    assert manifest.source_last_modified == latest - timedelta(hours=72)
+
+    entries[3] = replace(entries[3], last_modified=None)
+    incomplete = receita.build_manifest("2026-11", entries, "https://host/public.php/webdav/2026-11")
+    assert incomplete.source_last_modified is None
