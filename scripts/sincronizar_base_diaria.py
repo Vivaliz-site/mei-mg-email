@@ -171,6 +171,7 @@ def sync_receita_webdav(conn, run_id: int) -> int:
             run_id,
             "no_change",
             source_revision=revision,
+            source_last_modified=manifest.source_last_modified,
             details=details,
         )
         print("BASE_SYNC_STATUS=no_change", flush=True)
@@ -188,6 +189,7 @@ def sync_receita_webdav(conn, run_id: int) -> int:
         run_id,
         "success",
         source_revision=revision,
+        source_last_modified=manifest.source_last_modified,
         rows_before=rows_before,
         rows_after=rows_after,
         rows_added=rows_added,
