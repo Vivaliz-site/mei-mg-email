@@ -20,6 +20,8 @@ from defusedxml import ElementTree as ET
 from defusedxml.common import DefusedXmlException
 import zipfile
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -57,6 +59,7 @@ class DavEntry:
     href: str
     size: int
     is_dir: bool
+    last_modified: datetime | None = None
 
 
 @dataclass(frozen=True)
@@ -72,6 +75,7 @@ class SnapshotManifest:
     files: tuple[RemoteZip, ...]
     token: str = ""
     source_url: str = ""
+    source_last_modified: datetime | None = None
 
 
 @dataclass
@@ -140,7 +144,7 @@ def _basic_auth(token: str) -> str:
 
 def _propfind(url: str, token: str, timeout_seconds: int) -> bytes:
     body = b"""<?xml version="1.0" encoding="utf-8" ?>
-<d:propfind xmlns:d="DAV:"><d:prop><d:displayname/><d:resourcetype/><d:getcontentlength/></d:prop></d:propfind>"""
+<d:propfind xmlns:d="DAV:"><d:prop><d:displayname/><d:resourcetype/><d:getcontentlength/><d:getlastmodified/></d:prop></d:propfind>"""
     req = Request(
         url.rstrip("/") + "/",
         data=body,
@@ -159,6 +163,22 @@ def _propfind(url: str, token: str, timeout_seconds: int) -> bytes:
         raise RuntimeError(f"Receita WebDAV HTTP {exc.code} em PROPFIND") from exc
     except URLError as exc:
         raise RuntimeError(f"Receita WebDAV indisponivel: {exc.reason}") from exc
+
+
+def _parse_webdav_modified(value: str | None) -> datetime | None:
+    """Accept only an explicit timezone-aware provider timestamp, never local job time."""
+    if not value:
+        return None
+    try:
+        modified = parsedate_to_datetime(value)
+        if modified.tzinfo is None:
+            return None
+        modified = modified.astimezone(timezone.utc)
+        if modified > datetime.now(timezone.utc):
+            return None
+        return modified
+    except (ValueError, TypeError, IndexError):
+        return None
 
 
 def parse_propfind_entries(payload: bytes) -> list[DavEntry]:
@@ -191,7 +211,9 @@ def parse_propfind_entries(payload: bytes) -> list[DavEntry]:
             size = int(size_el.text or 0) if size_el is not None else 0
         except (TypeError, ValueError):
             size = 0
-        entries.append(DavEntry(name=name, href=href, size=size, is_dir=is_dir))
+        modified_el = prop.find(f"{DAV}getlastmodified")
+        modified = _parse_webdav_modified(modified_el.text if modified_el is not None else None)
+        entries.append(DavEntry(name=name, href=href, size=size, is_dir=is_dir, last_modified=modified))
     return entries
 
 
@@ -237,11 +259,15 @@ def build_manifest(
             )
         remote_url = folder_url.rstrip("/") + "/" + urllib.parse.quote(expected)
         files.append(RemoteZip(name=expected, url=remote_url, size=entry.size))
+    # Every archive belongs to the same snapshot. Missing provider metadata remains unknown.
+    modified_times = [by_name[name][0].last_modified for name in EXPECTED_ARCHIVES]
+    source_last_modified = min(modified_times) if all(modified_times) else None
     return SnapshotManifest(
         competence=competence,
         files=tuple(files),
         token=token,
         source_url=source_url or folder_url,
+        source_last_modified=source_last_modified,
     )
 
 
