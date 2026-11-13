@@ -60,3 +60,20 @@ def test_receita_new_revision_imports_and_records_success(monkeypatch):
     assert captured["rows_before"] == 100
     assert captured["rows_after"] == 112
     assert captured["details"]["import"]["files_processed"] == 10
+
+
+def test_receita_persists_verified_modified_time_on_no_change(monkeypatch):
+    from dataclasses import replace
+    from datetime import datetime, timezone
+
+    verified = datetime(2026, 11, 13, 16, tzinfo=timezone.utc)
+    manifest = replace(_manifest("2026-11"), source_last_modified=verified)
+    monkeypatch.setattr(sync.receita_webdav, "discover_latest_snapshot", lambda: manifest)
+    monkeypatch.setattr(sync, "_previous_successful_revision", lambda _conn, _id: "receita:2026-11")
+    captured = {}
+    monkeypatch.setattr(sync, "finish_run", lambda _conn, _id, status, **kw: captured.update(status=status, **kw))
+    monkeypatch.setattr(sync.receita_webdav, "import_snapshot", lambda *_a, **_kw: (_ for _ in ()).throw(AssertionError("not expected")))
+
+    assert sync.sync_receita_webdav(object(), 50) == 0
+    assert captured["status"] == "no_change"
+    assert captured["source_last_modified"] == verified
