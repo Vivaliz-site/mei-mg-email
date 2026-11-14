@@ -8,7 +8,7 @@ ExecStartPre=__PYTHON__ __APP_DIR__/scripts/runtime_policy_guard.py
 Type=oneshot
 User=__RUN_USER__
 WorkingDirectory=__APP_DIR__
-ExecStart=__PYTHON__ scripts/sincronizar_base_diaria.py
+ExecStart=__PYTHON__ -m scripts.sincronizar_base_diaria
 Environment=PYTHONUNBUFFERED=1
 NoNewPrivileges=true
 PrivateTmp=true
