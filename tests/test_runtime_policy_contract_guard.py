@@ -38,3 +38,10 @@ def test_base_sync_preflight_uses_rendered_application_python():
     unit = (ROOT / 'deploy' / 'systemd' / 'mei-mg-email-base-sync.service').read_text(encoding='utf-8')
     assert 'ExecStartPre=__PYTHON__ __APP_DIR__/scripts/runtime_policy_guard.py' in unit
     assert 'ExecStartPre=/usr/bin/python3' not in unit
+
+
+def test_base_sync_imports_release_package_instead_of_legacy_workspace():
+    unit = (ROOT / 'deploy' / 'systemd' / 'mei-mg-email-base-sync.service').read_text(encoding='utf-8')
+    assert 'WorkingDirectory=__APP_DIR__' in unit
+    assert 'ExecStart=__PYTHON__ -m scripts.sincronizar_base_diaria' in unit
+    assert 'ExecStart=__PYTHON__ scripts/sincronizar_base_diaria.py' not in unit
